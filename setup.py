@@ -9,7 +9,7 @@ setup(
     name='checkio_json_serializer',
     version='0.1',
     python_requires='>=3.5',
-    description='Serializers for CheckiO Missions',
+    description='JSON serilizer for more complex objects',
     author='CheckiO',
     author_email='a.lyabah@checkio.org',
     url='https://github.com/CheckiO/checkio-json-serializer',
