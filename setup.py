@@ -7,7 +7,7 @@ source_directory = dirname(abspath(__file__))
 
 setup(
     name='checkio_json_serializer',
-    version='0.1',
+    version='0.1.1',
     python_requires='>=3.5',
     description='JSON serilizer for more complex objects',
     author='CheckiO',
