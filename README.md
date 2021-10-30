@@ -1,3 +1,5 @@
+[![PyPI version fury.io](https://badge.fury.io/py/checkio-json-serializer.svg)](https://pypi.python.org/pypi/checkio-json-serializer/) [![PyPI pyversions](https://img.shields.io/pypi/pyversions/checkio-json-serializer.svg)](https://pypi.python.org/pypi/checkio-json-serializer/)
+
 checkio-json-serializer
 ===================
 
