@@ -22,6 +22,9 @@ def test_loads():
 
 
 def test_exception_simple_key():
+    """
+    JSON can only use simple types for key
+    """
     with pytest.raises(TypeError):
         dumps({(1, 2): 3})
 
@@ -34,6 +37,12 @@ def test_exception_loads_wrong_name():
 
 
 class UnexpecrtedClass:
+    """
+    Example of non-builtoin class.
+
+    Methods __hash__ and __eq__ are for compering test results
+    """
+
     def __init__(self, name, param):
         self.name = name
         self.param = param
@@ -45,12 +54,22 @@ class UnexpecrtedClass:
         return hash(self) == hash(other)
 
 
+CUSTOM_OBJ = {"45": UnexpecrtedClass("Alex", 200)}
+SERIALIZED_CUSTOM_OBJ = {"45": {KEY_PARSE: "UnexpecrtedClass", "values": ["Alex", 200]}}
+
+
 def test_exception_unexpected_type_value():
+    """
+    You can't serialize any object custom object
+    """
     with pytest.raises(CheckiOUnknownType):
-        dumps({"45": UnexpecrtedClass("Alex", 200)})
+        dumps(CUSTOM_OBJ)
 
 
 def test_dumps_extra():
+    """
+        Use extra_cover for submiting custom objects
+    """
     extra_cover = (
         (
             UnexpecrtedClass,
@@ -58,20 +77,21 @@ def test_dumps_extra():
             lambda obj, obj_cover: {"values": [obj.name, obj.param]},
         ),
     )
-    assert json.loads(
-        dumps({"45": UnexpecrtedClass("Alex", 200)}, extra_cover=extra_cover)
-    ) == {"45": {KEY_PARSE: "UnexpecrtedClass", "values": ["Alex", 200]}}
+    assert (
+        json.loads(dumps(CUSTOM_OBJ, extra_cover=extra_cover)) == SERIALIZED_CUSTOM_OBJ
+    )
 
 
 def test_loads_extra():
+    """
+        Use extra_hooks for parsing complex objects
+    """
     assert (
         loads(
-            json.dumps(
-                {"45": {KEY_PARSE: "UnexpecrtedClass", "values": ["Alex", 200]}}
-            ),
+            json.dumps(SERIALIZED_CUSTOM_OBJ),
             extra_hooks={
                 "UnexpecrtedClass": lambda obj: UnexpecrtedClass(*obj["values"])
             },
         )
-        == {"45": UnexpecrtedClass("Alex", 200)}
+        == CUSTOM_OBJ
     )

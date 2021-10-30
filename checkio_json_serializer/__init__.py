@@ -38,6 +38,11 @@ class JSONEncoder(json.JSONEncoder):
 
 
 def obj_cover(obj, extra_cover=None):
+    """
+        function that converts non-JSON-serializable python object into JSON-serializable
+
+        @extra_cover for convering custom objects - is a list of lists of 3 elements. (CustomClass, unique name, and function for converting)
+    """
 
     if extra_cover:
         for cls, name, extra_obj_cover in extra_cover:
@@ -90,6 +95,13 @@ def obj_cover(obj, extra_cover=None):
 
 
 def object_hook(obj, extra_hooks=None):
+    """
+        Function that object into non-JSON-serializable python object
+
+        The function is using for object_hook argument of json.loads function
+
+        @extra_hooks for parsing custom objects - a dict where key is a unique name and value is converting function.
+    """
     if KEY_PARSE in obj:
         name = obj[KEY_PARSE]
         if extra_hooks and name in extra_hooks:
