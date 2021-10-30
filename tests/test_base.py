@@ -68,7 +68,7 @@ def test_exception_unexpected_type_value():
 
 def test_dumps_extra():
     """
-        Use extra_cover for submiting custom objects
+    Use extra_cover for submiting custom objects
     """
     extra_cover = (
         (
@@ -84,7 +84,7 @@ def test_dumps_extra():
 
 def test_loads_extra():
     """
-        Use extra_hooks for parsing complex objects
+    Use extra_hooks for parsing complex objects
     """
     assert (
         loads(
