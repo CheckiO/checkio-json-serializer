@@ -19,6 +19,7 @@ lib
 lib64
 __pycache__
 .DS_Store
+publish.sh
 
 # Installer logs
 pip-log.txt
