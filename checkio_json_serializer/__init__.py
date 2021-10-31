@@ -33,11 +33,11 @@ class JSONEncoder(json.JSONEncoder):
 
     def encode(self, obj, *args, **kwargs):
         return super().encode(
-            obj_cover(obj, extra_cover=self.extra_cover), *args, **kwargs
+            object_cover(obj, extra_cover=self.extra_cover), *args, **kwargs
         )
 
 
-def obj_cover(obj, extra_cover=None):
+def object_cover(obj, extra_cover=None):
     """
     function that converts non-JSON-serializable python object into JSON-serializable
 
@@ -45,29 +45,29 @@ def obj_cover(obj, extra_cover=None):
     """
 
     if extra_cover:
-        for cls, extra_obj_cover, *other in extra_cover:
+        for cls, extra_object_cover, *other in extra_cover:
             name = other[0] if other else cls.__name__
             if isinstance(obj, cls):
                 return cover(
                     name=name,
                     **dict(
                         (
-                            (k, obj_cover(v, extra_cover=extra_cover))
-                            for k, v in extra_obj_cover(obj).items()
+                            (k, object_cover(v, extra_cover=extra_cover))
+                            for k, v in extra_object_cover(obj).items()
                         )
                     )
                 )
 
     if isinstance(obj, list):
-        return [obj_cover(v, extra_cover=extra_cover) for v in obj]
+        return [object_cover(v, extra_cover=extra_cover) for v in obj]
     if isinstance(obj, dict):
         return dict(
-            ((k, obj_cover(v, extra_cover=extra_cover)) for k, v in obj.items())
+            ((k, object_cover(v, extra_cover=extra_cover)) for k, v in obj.items())
         )
     if isinstance(obj, set):
-        return cover("set", values=obj_cover(list(obj), extra_cover=extra_cover))
+        return cover("set", values=object_cover(list(obj), extra_cover=extra_cover))
     if isinstance(obj, tuple):
-        return cover("tuple", values=obj_cover(list(obj), extra_cover=extra_cover))
+        return cover("tuple", values=object_cover(list(obj), extra_cover=extra_cover))
     if isinstance(obj, complex):
         return cover("complex", value=[obj.real, obj.imag])
 
