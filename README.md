@@ -77,8 +77,7 @@ from checkio_json_serializer import dumps, loads
 extra_cover = (
     (
         UnexpecrtedClass,
-        "UnexpecrtedClass",
-        lambda obj, obj_cover: {"values": [obj.name, obj.param]},
+        lambda obj: {"values": [obj.name, obj.param]},
     ),
 )
 
@@ -89,7 +88,7 @@ serialized_obj = dumps(obj, extra_cover=extra_cover)
 In order to load object you need to use `extra_hooks` attribute
 
 ```python
-loads(serialized_obj, extra_hooks={
+loads(serialized_obj, extra_uncover={
     "UnexpecrtedClass": lambda obj: UnexpecrtedClass(*obj["values"])
 },)
 ```

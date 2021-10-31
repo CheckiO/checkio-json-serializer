@@ -45,12 +45,16 @@ def obj_cover(obj, extra_cover=None):
     """
 
     if extra_cover:
-        for cls, name, extra_obj_cover in extra_cover:
+        for cls, extra_obj_cover, *other in extra_cover:
+            name = other[0] if other else cls.__name__
             if isinstance(obj, cls):
                 return cover(
                     name=name,
-                    **extra_obj_cover(
-                        obj, obj_cover=partial(obj_cover, extra_cover=extra_cover)
+                    **dict(
+                        (
+                            (k, obj_cover(v, extra_cover=extra_cover))
+                            for k, v in extra_obj_cover(obj).items()
+                        )
                     )
                 )
 
@@ -94,28 +98,27 @@ def obj_cover(obj, extra_cover=None):
     raise CheckiOUnknownType(_name)
 
 
-def object_hook(obj, extra_hooks=None):
+def object_uncover(obj, extra_uncover=None):
     """
     Function that object into non-JSON-serializable python object
 
-    The function is using for object_hook argument of json.loads function
-
-    @extra_hooks for parsing custom objects - a dict where key is a unique name and value is converting function.
+    @extra_uncover for parsing custom objects - a dict where key is a unique name and value is converting function.
     """
-    if KEY_PARSE in obj:
-        name = obj[KEY_PARSE]
-        if extra_hooks and name in extra_hooks:
-            val = extra_hooks[name](obj)
+    if isinstance(obj, dict) and KEY_PARSE in obj:
+        name = obj.pop(KEY_PARSE)
+        obj = object_uncover(obj, extra_uncover=extra_uncover)
+        if extra_uncover and name in extra_uncover:
+            return extra_uncover[name](obj)
         elif name == "set":
-            val = set(obj["values"])
+            return set(obj["values"])
         elif name == "tuple":
-            val = tuple(obj["values"])
+            return tuple(obj["values"])
         elif name == "complex":
-            val = complex(*obj["value"])
+            return complex(*obj["value"])
         elif name == "decimal.Decimal":
             from decimal import Decimal
 
-            val = Decimal(obj["value"])
+            return Decimal(obj["value"])
         elif name == "datetime.date":
             from datetime import date
 
@@ -125,13 +128,21 @@ def object_hook(obj, extra_hooks=None):
 
             return datetime(*obj["value"])
         else:
-            raise CheckiOHookException(name)
-        return val
+            obj[KEY_PARSE] = name
+            return obj
+
+    if isinstance(obj, dict):
+        return dict(
+            (
+                (k, object_uncover(v, extra_uncover=extra_uncover))
+                for k, v in obj.items()
+            )
+        )
+
+    if isinstance(obj, list):
+        return [object_uncover(v, extra_uncover=extra_uncover) for v in obj]
+
     return obj
-
-
-def gen_object_hook(extra_hooks):
-    return partial(object_hook, extra_hooks=extra_hooks)
 
 
 def gen_encoder(extra_cover):
@@ -146,5 +157,6 @@ def dumps(*args, **kwargs):
 
 
 def loads(*args, **kwargs):
-    extra_hooks = kwargs.pop("extra_hooks", None)
-    return json.loads(*args, object_hook=gen_object_hook(extra_hooks))
+    extra_uncover = kwargs.pop("extra_uncover", None)
+    obj = json.loads(*args, **kwargs)
+    return object_uncover(obj, extra_uncover=extra_uncover)

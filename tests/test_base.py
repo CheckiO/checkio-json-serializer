@@ -29,11 +29,13 @@ def test_exception_simple_key():
         dumps({(1, 2): 3})
 
 
-def test_exception_loads_wrong_name():
-    with pytest.raises(CheckiOHookException):
-        loads(json.dumps({"a": {KEY_PARSE: "unknown_dict", "values": [4, 5]}})) == {
-            "a": set([4, 5])
-        }
+def test_loads_wrong_name():
+    """
+    unexpected key will be simply skiped
+    """
+    assert loads(json.dumps({"a": {KEY_PARSE: "unknown_dict", "values": [4, 5]}})) == {
+        "a": {KEY_PARSE: "unknown_dict", "values": [4, 5]}
+    }
 
 
 class UnexpecrtedClass:
@@ -73,8 +75,7 @@ def test_dumps_extra():
     extra_cover = (
         (
             UnexpecrtedClass,
-            "UnexpecrtedClass",
-            lambda obj, obj_cover: {"values": [obj.name, obj.param]},
+            lambda obj: {"values": [obj.name, obj.param]},
         ),
     )
     assert (
@@ -84,14 +85,46 @@ def test_dumps_extra():
 
 def test_loads_extra():
     """
-    Use extra_hooks for parsing complex objects
+    Use extra_uncover for parsing complex objects
     """
     assert (
         loads(
             json.dumps(SERIALIZED_CUSTOM_OBJ),
-            extra_hooks={
+            extra_uncover={
                 "UnexpecrtedClass": lambda obj: UnexpecrtedClass(*obj["values"])
             },
         )
         == CUSTOM_OBJ
     )
+
+
+def test_nested_user_object():
+    val = {
+        "45": UnexpecrtedClass("Alex", 200),
+        "Mix": UnexpecrtedClass("Alex", UnexpecrtedClass("Mike", 100)),
+    }
+    extra_uncover = {"UnexpecrtedClass": lambda obj: UnexpecrtedClass(*obj["values"])}
+    extra_cover = (
+        (
+            UnexpecrtedClass,
+            lambda obj: {"values": [obj.name, obj.param]},
+        ),
+    )
+    assert val == loads(
+        dumps(val, extra_cover=extra_cover), extra_uncover=extra_uncover
+    )
+
+
+def test_dumps_extra_overwrite_name():
+    """
+    Use extra_cover for submiting custom objects
+    """
+    extra_cover = (
+        (UnexpecrtedClass, lambda obj: {"values": [obj.name, obj.param]}, "important"),
+    )
+    extra_uncover = {"important": lambda obj: UnexpecrtedClass(*obj["values"])}
+
+    dump_val = {"45": {KEY_PARSE: "important", "values": ["Alex", 200]}}
+    assert json.loads(dumps(CUSTOM_OBJ, extra_cover=extra_cover)) == dump_val
+
+    assert loads(json.dumps(dump_val), extra_uncover=extra_uncover) == CUSTOM_OBJ
