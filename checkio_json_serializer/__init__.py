@@ -8,26 +8,6 @@ def cover(name, **kwargs):
     return dict(**{KEY_PARSE: name}, **kwargs)
 
 
-class CheckiOException(Exception):
-    pass
-
-
-class CheckiOHookException(CheckiOException):
-    def __init__(self, name):
-        self.name = name
-
-    def __str__(self):
-        return 'type "{}" is not expected'.format(self.name)
-
-
-class CheckiOUnknownType(CheckiOException):
-    def __init__(self, name):
-        self.name = name
-
-    def __str__(self):
-        return 'value of type "{}" is not expected'.format(self.name)
-
-
 class JSONEncoder(json.JSONEncoder):
     extra_cover = None
 
@@ -72,9 +52,6 @@ def object_cover(obj, extra_cover=None):
         return cover("complex", value=[obj.real, obj.imag])
 
     _module = type(obj).__module__
-    if _module == "builtins":
-        return obj
-
     _name = _module + "." + type(obj).__name__
     _cover = partial(cover, _name)
 
@@ -95,7 +72,7 @@ def object_cover(obj, extra_cover=None):
             ]
         )
 
-    raise CheckiOUnknownType(_name)
+    return obj
 
 
 def object_uncover(obj, extra_uncover=None):

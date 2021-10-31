@@ -4,8 +4,6 @@ from checkio_json_serializer import (
     dumps,
     KEY_PARSE,
     loads,
-    CheckiOHookException,
-    CheckiOUnknownType,
 )
 
 
@@ -64,7 +62,7 @@ def test_exception_unexpected_type_value():
     """
     You can't serialize any object custom object
     """
-    with pytest.raises(CheckiOUnknownType):
+    with pytest.raises(TypeError):
         dumps(CUSTOM_OBJ)
 
 
