@@ -1,5 +1,6 @@
 import json
 from functools import partial
+from copy import deepcopy
 
 KEY_PARSE = "___checkio___type___"
 
@@ -75,15 +76,15 @@ def object_cover(obj, extra_cover=None):
     return obj
 
 
-def object_uncover(obj, extra_uncover=None):
+def object_uncover(obj, extra_uncover=None, skip_key_parse=False):
     """
     Function that object into non-JSON-serializable python object
 
     @extra_uncover for parsing custom objects - a dict where key is a unique name and value is converting function.
     """
-    if isinstance(obj, dict) and KEY_PARSE in obj:
-        name = obj.pop(KEY_PARSE)
-        obj = object_uncover(obj, extra_uncover=extra_uncover)
+    if not skip_key_parse and isinstance(obj, dict) and KEY_PARSE in obj:
+        name = obj[KEY_PARSE]
+        obj = object_uncover(obj, extra_uncover=extra_uncover, skip_key_parse=True)
         if extra_uncover and name in extra_uncover:
             return extra_uncover[name](obj)
         elif name == "set":
@@ -105,7 +106,6 @@ def object_uncover(obj, extra_uncover=None):
 
             return datetime(*obj["value"])
         else:
-            obj[KEY_PARSE] = name
             return obj
 
     if isinstance(obj, dict):

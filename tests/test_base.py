@@ -1,9 +1,11 @@
 import json
 import pytest
+from copy import deepcopy
 from checkio_json_serializer import (
     dumps,
     KEY_PARSE,
     loads,
+    object_uncover,
 )
 
 
@@ -126,3 +128,12 @@ def test_dumps_extra_overwrite_name():
     assert json.loads(dumps(CUSTOM_OBJ, extra_cover=extra_cover)) == dump_val
 
     assert loads(json.dumps(dump_val), extra_uncover=extra_uncover) == CUSTOM_OBJ
+
+
+def test_object_unchanged():
+    result = {KEY_PARSE: "set", "values": [2, 3]}
+    result_copy = deepcopy(result)
+    result_value = object_uncover(result)
+
+    assert result_value == {2, 3}
+    assert result == result_copy
