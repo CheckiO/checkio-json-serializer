@@ -1,6 +1,7 @@
 import json
 from functools import partial
 from copy import deepcopy
+from collections.abc import Iterable
 
 KEY_PARSE = "___checkio___type___"
 
@@ -72,6 +73,12 @@ def object_cover(obj, extra_cover=None):
                 obj.microsecond,
             ]
         )
+
+    if isinstance(obj, str):
+        return obj
+
+    if isinstance(obj, Iterable):
+        return [object_cover(v, extra_cover=extra_cover) for v in obj]
 
     return obj
 

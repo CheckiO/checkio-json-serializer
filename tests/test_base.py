@@ -137,3 +137,7 @@ def test_object_unchanged():
 
     assert result_value == {2, 3}
     assert result == result_copy
+
+
+def test_iterable():
+    assert dumps({"a": 1, "b": 2}.values()) == "[1, 2]"
